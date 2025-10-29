@@ -5,23 +5,23 @@ const regd_users = express.Router();
 
 let users = [];
 
-const isValid = (username)=>{ //returns boolean
-// Check if a user with the given username already exists
-const doesExist = (username) => {
-    // Filter the users array for any user with the same username
-    let userswithsamename = users.filter((user) => {
-        return user.username === username;
-    });
-    // Return true if any user with the same username is found, otherwise false
-    if (userswithsamename.length > 0) {
-        return true;
-    } else {
-        return false;
+const isValid = (username) => { //returns boolean
+    // Check if a user with the given username already exists
+    const doesExist = (username) => {
+        // Filter the users array for any user with the same username
+        let userswithsamename = users.filter((user) => {
+            return user.username === username;
+        });
+        // Return true if any user with the same username is found, otherwise false
+        if (userswithsamename.length > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
-}
 
-const authenticatedUser = (username,password)=>{ //returns boolean
+const authenticatedUser = (username, password) => { //returns boolean
     // Filter the users array for any user with the same username and password
     let validusers = users.filter((user) => {
         return (user.username === username && user.password === password);
@@ -35,7 +35,7 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 }
 
 //only registered users can login
-regd_users.post("/login", (req,res) => {
+regd_users.post("/login", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
     // Check if username or password is missing
@@ -60,8 +60,29 @@ regd_users.post("/login", (req,res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    const user = req.session.authorization.username;
+    const isbn = req.params.isbn;
+
+    if (req.body.review) {
+        books[isbn]["reviews"][user] = req.body.review;
+        res.send("Review added"); 
+    }
+    else {
+        return res.status(404).json({ message: "Review not provided" });
+    }
+});
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    const user = req.session.authorization.username;
+    const isbn = req.params.isbn;
+
+    if (isbn) {
+        delete books[isbn]["reviews"][user];
+        res.send("Review deleted"); 
+    }
+    else {
+        return res.status(404).json({ message: "Review not found" });
+    }
 });
 
 module.exports.authenticated = regd_users;
